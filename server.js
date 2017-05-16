@@ -59,6 +59,29 @@ app.post('/posts', (req, res) => {
         })
 })
 
+app.put('/posts/:id', (req, res) => {
+    if (!(req.params.id === req.body.id)) {
+        const message = `Request path id ${req.params.id} does not match ${req.body.id}`;
+        console.error(message);
+        res.status(400).json({ message: message });
+    }
+
+    const update = {};
+    const updatableFields = ['title', 'content', 'author'];
+
+    updatableFields.forEach((field) => {
+        if (field in req.body) {
+            update[field] = req.body[field];
+        }
+    })
+
+    BlogPost
+        .findByIdAndUpdate(req.params.id, { $set: update })
+        .exec()
+        .then(post => res.status(200).json(post.apiRepr()))
+        .catch(err => res.status(500).json('Internal server error'));
+})
+
 let server;
 
 function runServer(databaseUrl = DATABASE_URL, port = PORT) {
