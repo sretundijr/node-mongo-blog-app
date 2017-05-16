@@ -33,6 +33,32 @@ app.get('/posts/:id', (req, res) => {
         });
 })
 
+app.post('/posts', (req, res) => {
+    const requiredFields = ['title', 'content', 'author'];
+    console.log(req.body)
+    requiredFields.find(function (field) {
+        if (!(field in req.body)) {
+            const message = `Missing ${field} request body`;
+            console.error(message);
+            return res.status(400).send(message);
+        }
+    })
+
+    BlogPost
+        .create({
+            title: req.body.title,
+            author: req.body.author,
+            content: req.body.content
+        })
+        .then(
+        post => res.status(201).json(post.apiRepr())
+        )
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: 'Internal server error' });
+        })
+})
+
 let server;
 
 function runServer(databaseUrl = DATABASE_URL, port = PORT) {
